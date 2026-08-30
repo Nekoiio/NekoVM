@@ -5,10 +5,10 @@
 
 class Emulator
 {
-    private:
-        CPU cpu;
-        Memory mem;
+
     
     public:
         void run(const std::string& filename);
+        CPU cpu;
+        Memory mem;
 };

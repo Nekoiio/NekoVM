@@ -1,7 +1,7 @@
 #include "Emulator/CPU/defs/CPU.hpp"
 
 
-#define sci(x) static_cast<int>(x)
+#define sci(x) static_cast<uint8_t>(x)
 
 constexpr uint8_t FLAG_ZERO    = 0x01;
 constexpr uint8_t FLAG_CARRY   = 0x02;
@@ -35,7 +35,8 @@ void CPU::step(Memory& mem)
     switch ( opcode)
     {
         case sci(Instruction::movRV):
-        {    uint8_t val = mem.read(PC + 2);
+        {    
+            uint8_t val = mem.read(PC + 2);
             registers[mem.read(PC + 1)] = val;
 
             PC += 3;
@@ -127,6 +128,8 @@ void CPU::step(Memory& mem)
     }
 }
 
+
+
 void CPU::reset()
 {
     return;
@@ -139,7 +142,27 @@ void CPU::start(Memory& mem)
     while (running)
     {
         step(mem);
-        printf("%d\n", registers[0]);
+        //printf("%d\n", registers[0]);
     }
     reset();
+}
+
+
+Registers CPU::getRegisters()
+{
+    Registers current_state;
+
+    std::copy(
+        std::begin(registers),
+        std::end(registers),
+        current_state.registers.begin()
+    );
+
+    current_state.PC = PC;
+    current_state.FLAGS = FLAGS;
+    current_state.running = running;
+    current_state.SP    = SP;
+
+
+    return current_state;
 }
