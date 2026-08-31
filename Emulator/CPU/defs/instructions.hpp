@@ -16,6 +16,10 @@ enum class Instruction : uint8_t
 
     jmpA  = 0x07,
     jzA   = 0x08,
+
+    pushR = 0x10,
+    pushV = 0x11,
+    popR  = 0x12,
     
     stp   = 0xFF
 };

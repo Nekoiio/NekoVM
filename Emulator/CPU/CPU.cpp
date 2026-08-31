@@ -32,7 +32,7 @@ void CPU::step(Memory& mem)
 {
     uint8_t opcode = mem.read(PC);
 
-    switch ( opcode)
+    switch (opcode)
     {
         case sci(Instruction::movRV):
         {    
@@ -115,6 +115,36 @@ void CPU::step(Memory& mem)
             break;
         }
 
+
+        case sci(Instruction::pushR):
+        {
+            if (SP <= MemoryMap::STACK_END) throw std::runtime_error("Stack overflow");
+
+            SP -= 1;
+            mem.writeU8(SP, registers[mem.read(PC + 1)]);
+            PC += 2;
+            break;
+        }
+
+        case sci(Instruction::pushV):
+        {
+            if (SP <= MemoryMap::STACK_END) throw std::runtime_error("Stack overflow");
+
+            SP -= 1;
+            mem.writeU8(SP, mem.read(PC + 1));
+            PC += 2;
+            break;
+        }
+
+        case sci(Instruction::popR):
+        {
+            if (SP + 1 == 0x0000) throw std::runtime_error("Stack underflow");
+            registers[mem.read(PC + 1)] = mem.read(SP);
+            SP += 1;
+            PC += 2;
+            break;
+        }
+
         case sci(Instruction::stp):
         {    
             running = false;
@@ -165,4 +195,9 @@ Registers CPU::getRegisters()
 
 
     return current_state;
+}
+
+uint16_t CPU::getPC()
+{
+    return PC;
 }

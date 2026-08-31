@@ -19,15 +19,15 @@ struct Registers
 class CPU
 {
     private:
-        uint8_t registers[4];
+        uint8_t registers[4] = {0};
 
-        uint16_t PC;
-        uint16_t SP;
+        uint16_t PC = MemoryMap::PROGRAM_START;
+        uint16_t SP = MemoryMap::STACK_START;
 
-        uint16_t FLAGS;
+        uint16_t FLAGS = 0x0000;
         
         void cmp(const int16_t res);
-
+        
     public:
         bool running;
 
@@ -38,6 +38,8 @@ class CPU
         void start(Memory& mem);
 
         Registers getRegisters();
+
+        uint16_t getPC();
 
 };
 
