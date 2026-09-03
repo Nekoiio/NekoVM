@@ -2,13 +2,14 @@
 
 #include <stdint.h>
 #include "Emulator/Memory/defs/mem.hpp"
-#include "Emulator/CPU/defs/instructions.hpp"
+#include "Instructs/instructions.hpp"
 #include <array>
 #include <algorithm>
 
 struct Registers
 {
     std::array<uint8_t, 4> registers;
+    std::array<uint16_t, 4> registersU16;
     uint16_t PC;
     bool running;
     uint16_t FLAGS;
@@ -19,7 +20,8 @@ struct Registers
 class CPU
 {
     private:
-        uint8_t registers[4] = {0};
+        std::array<uint8_t, 4> registers = {0};
+        std::array<uint16_t, 4> registersU16 = {0};
 
         uint16_t PC = MemoryMap::PROGRAM_START;
         uint16_t SP = MemoryMap::STACK_START;

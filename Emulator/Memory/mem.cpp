@@ -34,6 +34,18 @@ void Memory::writeU8(uint16_t address, const uint8_t byte)
     data[address] = byte;
 }
 
+void Memory::writeU16(uint16_t address, const uint16_t value)
+{
+    if (address + 2 >= MAX_SIZE)
+    {
+        throw std::runtime_error("Out of bounds write in memory");
+    }
+
+    data[address] = static_cast<uint8_t>(value);
+    data[address + 1] = static_cast<uint8_t>((value >> 8));
+}
+
+
 
 uint16_t Memory::readU16(const uint16_t address)
 {

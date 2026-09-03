@@ -1,9 +1,11 @@
 #pragma once
 
 #include "Emulator/defs/emulator.hpp"
+#include "Instructs/instructions.hpp"
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+
 
 class Debugger
 {

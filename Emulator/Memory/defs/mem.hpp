@@ -19,6 +19,7 @@ class Memory
         void    load(const std::string& name);
         void    write(uint16_t address, const uint8_t* byte2write, const uint16_t byte_count);
         void    writeU8(uint16_t address, const uint8_t byte);
+        void    writeU16(uint16_t address, const uint16_t value);
 };
 
 namespace MemoryMap
