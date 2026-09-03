@@ -53,14 +53,34 @@ void CPU::step(Memory& mem)
 
         case ISA::Instruction::movXR:
         {
-            
+            registersU16[mem.read(PC + 1)] = (registersU16[mem.read(PC + 1)] & 0xFF00)  | static_cast<uint16_t>(registers[mem.read(PC + 2)]);
+
+            PC += ilen;
+            break;
         }
         case ISA::Instruction::movXV:
         {
+            registersU16[mem.read(PC + 1)] = (registersU16[mem.read(PC + 1)] & 0xFF00)  | static_cast<uint16_t>(mem.read(PC + 2));
+
+            PC += ilen;
+            break;
+        }
+        case ISA::Instruction::movXA:
+        {
             registersU16[mem.read(PC + 1)] = mem.readU16(PC + 2);
+            
+            PC += ilen;
+            break;
+        }
+        case ISA::Instruction::movXX:
+        {
+            registersU16[mem.read(PC +1)] = registersU16[mem.read(PC + 2)];
+
+            PC += ilen;
+            break;
         }
 
-        
+
         case ISA::Instruction::addRR:
         {    
             registers[mem.read(PC+1)] += registers[mem.read(PC+2)];
@@ -153,8 +173,19 @@ void CPU::step(Memory& mem)
             SP -= 2;
 
             uint16_t bytes = mem.readU16(PC+1);
-            printf("PUSHED VALUE: %x", bytes);
+            //!printf("PUSHED VALUE: %x", bytes); DEBUG
             mem.writeU16(SP, bytes);
+
+            PC += ilen;
+            break;
+        }
+
+        case ISA::Instruction::pushX:
+        {
+            if (SP < MemoryMap::STACK_END + 2) throw std::runtime_error("Stack overflow");
+
+            SP -= 2;
+            mem.writeU16(SP, registersU16[mem.read(PC + 1)]);
 
             PC += ilen;
             break;

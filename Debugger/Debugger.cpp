@@ -34,6 +34,19 @@ std::string U8ToHex(uint16_t value)
 
     return ss.str();
 }
+std::string U16ToHex(uint16_t value)
+{
+    std::stringstream ss;
+
+    ss << "0x"
+       << std::uppercase
+       << std::hex
+       << std::setw(2)
+       << std::setfill('0')
+       << value;
+
+    return ss.str();
+}
 
 uint16_t fromHex(std::string& hex)
 {
@@ -133,7 +146,7 @@ void Debugger::printRegs()
     }
     for (int i = 0; i < regState.registersU16.size(); i++)
     {
-        std::cout << "x" << i << " -> " << static_cast<int>(regState.registersU16[i]) << std::endl; 
+        std::cout << "x" << i << " -> " << U16ToHex(static_cast<uint16_t>(regState.registersU16[i])) << std::endl; 
     }
 
     std::cout << std::endl << "PC -> " << toHex(regState.PC) << std::endl;
@@ -154,21 +167,34 @@ void Debugger::interpret(const uint16_t address)
     {
         case ISA::Instruction::movRV: printInstruct("mov", "rv", address); break;
         case ISA::Instruction::movRR: printInstruct("mov", "rr", address); break;
+        case ISA::Instruction::movXA: printInstruct("mov", "xa", address); break;
+        case ISA::Instruction::movXR: printInstruct("mov", "xr", address); break;
+        case ISA::Instruction::movXV: printInstruct("mov", "xv", address); break;
+        case ISA::Instruction::movXX: printInstruct("mov", "xx", address); break;
+
         case ISA::Instruction::addRR: printInstruct("add", "rr", address); break;
         case ISA::Instruction::addRV: printInstruct("add", "rv", address); break;
+
         case ISA::Instruction::subRR: printInstruct("sub", "rr", address); break;
         case ISA::Instruction::subRV: printInstruct("sub", "rv", address); break;
+
         case ISA::Instruction::cmpRR: printInstruct("cmp", "rr", address); break;
         case ISA::Instruction::cmpRV: printInstruct("cmp", "rv", address); break; 
+
         case ISA::Instruction::jmpA:  printInstruct("jmp", "a", address); break;
         case ISA::Instruction::jzA:   printInstruct("jz", "a", address); break;
+
         case ISA::Instruction::stp:   printInstruct("stp", "s", address); break;
+
         case ISA::Instruction::pushR: printInstruct("push", "r", address); break;
         case ISA::Instruction::pushV: printInstruct("push", "v", address); break;
         case ISA::Instruction::pushA: printInstruct("push", "a", address); break;
+        case ISA::Instruction::pushX: printInstruct("push", "x", address); break;
+
         case ISA::Instruction::callA: printInstruct("call", "a", address); break;
         case ISA::Instruction::ret:   printInstruct("ret", "", address); break;
-        case ISA::Instruction::pop16: printInstruct("pop", "a", address); break;
+
+        case ISA::Instruction::pop16: printInstruct("pop", "x", address); break;
         case ISA::Instruction::popR:  printInstruct("pop", "r", address); break;
 
         default: break;
@@ -216,6 +242,48 @@ void Debugger::printInstruct(const std::string& op, const std::string& type, con
     else if (type == "")
     {
         std::cout << op;
+    }
+    else if (type == "x")
+    {
+        std::cout << op << " x" << static_cast<int>(mem.read(address + 1));
+    }
+    else if (type == "xa")
+    {
+            std::cout 
+            << op 
+            <<  " x" 
+            << static_cast<int>(mem.read(address + 1)) 
+            << ", " 
+            <<  static_cast<int>(mem.readU16(address + 2));   
+    }
+    else if (type == "xr")
+    {
+            std::cout 
+            << op 
+            <<  " x" 
+            << static_cast<int>(mem.read(address + 1)) 
+            << ", " 
+            << "r"
+            << static_cast<int>(mem.read(address + 2));
+    }
+    else if (type == "xx")
+    {
+            std::cout 
+            << op 
+            <<  " x" 
+            << static_cast<int>(mem.read(address + 1)) 
+            << ", " 
+            << "x"
+            << static_cast<int>(mem.read(address + 2));
+    }
+    else if(type == "xv")
+    {
+            std::cout 
+            << op 
+            <<  " x" 
+            << static_cast<int>(mem.read(address + 1)) 
+            << ", " 
+            <<  static_cast<int>(mem.read(address + 2));
     }
     else
     {
