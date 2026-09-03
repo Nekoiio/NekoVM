@@ -1,6 +1,6 @@
 #include "Debugger/defs/Debugger.hpp"
 
-#define sci(x) static_cast<uint8_t>(x)
+#define x) static_cast<uint8_t>(x)
 
 
 Debugger::Debugger(Emulator& e) : emu(e), cpu(e.cpu), mem(e.mem) {}
@@ -49,34 +49,7 @@ void helper()
 }
 //* -------------------------------------------------------------------------
 
-uint16_t Debugger::instructionLength(uint16_t address)
-{
-    switch (mem.read(address))
-    {
-        case sci(Instruction::stp):
-            return 1;
 
-        case sci(Instruction::pushR):
-        case sci(Instruction::pushV):
-        case sci(Instruction::popR):
-            return 2;
-
-        case sci(Instruction::movRV):
-        case sci(Instruction::movRR):
-        case sci(Instruction::addRR):
-        case sci(Instruction::addRV):
-        case sci(Instruction::subRR):
-        case sci(Instruction::subRV):
-        case sci(Instruction::cmpRR):
-        case sci(Instruction::cmpRV):
-        case sci(Instruction::jmpA):
-        case sci(Instruction::jzA):
-            return 3;
-
-        default:
-            return 1;
-    }
-}
 
 
 
@@ -135,29 +108,34 @@ void Debugger::printRegs()
     std::cout << "------------- INSTRUCTIONS ------------" << std::endl;
 
     uint16_t current = regState.PC;
+    ISA::Instruction op = ISA::decode(mem.read(current));
 
     std::cout << "PC-> ";
     interpret(current);
 
     // Next instruction
-    current += instructionLength(current);
+    current += ISA::instructionLength(op);
     interpret(current);
 
     // Next instruction
-    current += instructionLength(current);
+    current += ISA::instructionLength(op);
     interpret(current);
 
     // Next instruction
-    current += instructionLength(current);
+    current += ISA::instructionLength(op);
     interpret(current);
 
 
     std::cout << "------------- REGISTERS ------------" << std::endl;
     for (int i = 0; i < regState.registers.size(); i++)
     {
-        std::cout << "R" << i << " -> " << static_cast<int>(regState.registers[i]) << std::endl; 
+        std::cout << "r" << i << " -> " << static_cast<int>(regState.registers[i]) << std::endl; 
     }
-    
+    for (int i = 0; i < regState.registersU16.size(); i++)
+    {
+        std::cout << "x" << i << " -> " << static_cast<int>(regState.registersU16[i]) << std::endl; 
+    }
+
     std::cout << std::endl << "PC -> " << toHex(regState.PC) << std::endl;
     std::cout << "SP -> " << toHex(regState.SP) << std::endl << std::endl;
 
@@ -172,22 +150,26 @@ void Debugger::printRegs()
 
 void Debugger::interpret(const uint16_t address)
 {
-    switch (mem.read(address))
+    switch (ISA::decode(mem.read(address)))
     {
-        case sci(Instruction::movRV): printInstruct("mov", "rv", address); break;
-        case sci(Instruction::movRR): printInstruct("mov", "rr", address); break;
-        case sci(Instruction::addRR): printInstruct("add", "rr", address); break;
-        case sci(Instruction::addRV): printInstruct("add", "rv", address); break;
-        case sci(Instruction::subRR): printInstruct("sub", "rr", address); break;
-        case sci(Instruction::subRV): printInstruct("sub", "rv", address); break;
-        case sci(Instruction::cmpRR): printInstruct("cmp", "rr", address); break;
-        case sci(Instruction::cmpRV): printInstruct("cmp", "rv", address); break; 
-        case sci(Instruction::jmpA):  printInstruct("jmp", "a", address); break;
-        case sci(Instruction::jzA):   printInstruct("jz", "a", address); break;
-        case sci(Instruction::stp):   printInstruct("stp", "s", address); break;
-        case sci(Instruction::pushR): printInstruct("push", "r", address); break;
-        case sci(Instruction::pushV): printInstruct("push", "v", address); break; 
-        case sci(Instruction::popR):  printInstruct("pop", "r", address); break;
+        case ISA::Instruction::movRV: printInstruct("mov", "rv", address); break;
+        case ISA::Instruction::movRR: printInstruct("mov", "rr", address); break;
+        case ISA::Instruction::addRR: printInstruct("add", "rr", address); break;
+        case ISA::Instruction::addRV: printInstruct("add", "rv", address); break;
+        case ISA::Instruction::subRR: printInstruct("sub", "rr", address); break;
+        case ISA::Instruction::subRV: printInstruct("sub", "rv", address); break;
+        case ISA::Instruction::cmpRR: printInstruct("cmp", "rr", address); break;
+        case ISA::Instruction::cmpRV: printInstruct("cmp", "rv", address); break; 
+        case ISA::Instruction::jmpA:  printInstruct("jmp", "a", address); break;
+        case ISA::Instruction::jzA:   printInstruct("jz", "a", address); break;
+        case ISA::Instruction::stp:   printInstruct("stp", "s", address); break;
+        case ISA::Instruction::pushR: printInstruct("push", "r", address); break;
+        case ISA::Instruction::pushV: printInstruct("push", "v", address); break;
+        case ISA::Instruction::pushA: printInstruct("push", "a", address); break;
+        case ISA::Instruction::callA: printInstruct("call", "a", address); break;
+        case ISA::Instruction::ret:   printInstruct("ret", "", address); break;
+        case ISA::Instruction::pop16: printInstruct("pop", "a", address); break;
+        case ISA::Instruction::popR:  printInstruct("pop", "r", address); break;
 
         default: break;
     }
@@ -231,6 +213,10 @@ void Debugger::printInstruct(const std::string& op, const std::string& type, con
     {
         std::cout << op << " " << toHex(mem.read(address + 1));
     }
+    else if (type == "")
+    {
+        std::cout << op;
+    }
     else
     {
         std::cout << "UNKNOWN";
@@ -250,20 +236,31 @@ void Debugger::dump_stack(const uint16_t entries)
 
 void Debugger::dump_stack(const uint16_t entries)
 {
-    uint16_t counter;
-    if (MemoryMap::STACK_START - regState.SP == 0)
+    if (MemoryMap::STACK_START == regState.SP)
     {
         std::cout << "NO VARIABLES ON THE STACK AT THE MOMENT" << std::endl;
-    } 
-    else
-    {
-        counter = regState.SP + entries;
+        return;
     }
-    
-    for (; counter > regState.SP; counter--)
-    {
-        std::cout << toHex(counter) << " | " << U8ToHex(mem.read(counter)) << std::endl;
-    }
-    std::cout << "SP-> " << toHex(regState.SP) << " | " << U8ToHex(mem.read(regState.SP)) << std::endl;
 
+    uint16_t counter = regState.SP + entries - 1;
+
+    for (;; counter--)
+    {
+        if (counter <= regState.SP)
+            break;
+
+        std::cout << toHex(counter)
+                  << " | "
+                  << U8ToHex(mem.read(counter))
+                  << std::endl;
+
+        if (counter == 0x0000)
+            break;
+    }
+
+    std::cout << "SP-> "
+              << toHex(regState.SP)
+              << " | "
+              << U8ToHex(mem.read(regState.SP))
+              << std::endl;
 }
