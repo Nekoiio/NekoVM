@@ -28,7 +28,7 @@ class CPU
 
         uint16_t FLAGS = 0x0000;
         
-        void cmp(const int16_t res);
+        void cmp(uint8_t a, uint8_t b);
         
     public:
         bool running;
