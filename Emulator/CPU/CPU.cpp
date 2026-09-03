@@ -6,23 +6,27 @@ constexpr uint8_t FLAG_CARRY   =  0b00000010;
 constexpr uint8_t FLAG_NEGATIVE = 0b00000100;
 constexpr uint8_t FLAG_OVERFLOW = 0b00001000;
 
-void CPU::cmp(const int16_t res)
+void CPU::cmp(uint8_t a, uint8_t b)
 {
+     uint8_t res = static_cast<uint8_t>(a - b);
+
+    // Zero
     if (res == 0)
-    {
         FLAGS |= FLAG_ZERO;
-        FLAGS &= ~FLAG_NEGATIVE;
-    } 
-    else if (res < 0)
-    {
+    else
         FLAGS &= ~FLAG_ZERO;
+
+    // Negative
+    if (res < 0)
         FLAGS |= FLAG_NEGATIVE;
-    }
-    else if (res > 0)
-    {
-        FLAGS &= ~FLAG_ZERO;
+    else
         FLAGS &= ~FLAG_NEGATIVE;
-    }
+
+    // Signed overflow
+    if (((a ^ b) & 0x80) && ((a ^ res) & 0x80))
+        FLAGS |= FLAG_OVERFLOW;
+    else
+        FLAGS &= ~FLAG_OVERFLOW;
 }
 
 
@@ -126,20 +130,39 @@ void CPU::step(Memory& mem)
             }
             break;
         }
-        
+        case ISA::Instruction::jgA:
+        {
+            if ((FLAGS & FLAG_NEGATIVE) != (FLAGS & FLAG_OVERFLOW))
+            {
+                PC = mem.readU16(PC+1);
+            } else {
+                PC += ilen;
+            }
+            break;
+        }
+        case ISA::Instruction::jlA:
+        {
+            if (!(FLAGS & FLAG_ZERO) && (FLAGS & FLAG_NEGATIVE) == (FLAGS & FLAG_OVERFLOW))
+            {
+                PC = mem.readU16(PC + 1);
+            } else {
+                PC += ilen;
+            }
+            break;
+        }
+
 
         case ISA::Instruction::cmpRR:
         {    
-            int16_t res = registers[mem.read(PC + 1)] - registers[mem.read(PC + 2)];
-            cmp(res);
+            cmp(registers[mem.read(PC + 1)], registers[mem.read(PC + 2)]);
             PC += ilen;
             break;
         }
         
         case ISA::Instruction::cmpRV:
         {    
-            int16_t res = registers[mem.read(PC + 1)] - mem.read(PC + 2);
-            cmp(res);
+    
+            cmp(registers[mem.read(PC + 1)], mem.read(PC + 2));
             PC += ilen;
             break;
         }
