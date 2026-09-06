@@ -1,0 +1,6 @@
+mov r0, 01h
+add r0, 02h
+mov r1, r0
+push r0
+pop r3
+stp

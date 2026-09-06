@@ -1,10 +1,10 @@
 #pragma once
-
 //* <- means currently working on
 //! <- means not implemented
 //? <- means not added to md file yet / dont know if it works
 #include <stdint.h>
 #include <unordered_map>
+#include <string>
 namespace ISA
 { //TODO: UPDATE THE NUMBERS ON THE TABLE all  +1
     enum class Instruction : uint8_t
@@ -37,15 +37,16 @@ namespace ISA
         pushA = 0x13,
         pushX = 0x23, //?
         popR  = 0x14,
-        pop16  = 0x15,
+        popX = 0x15,
 
         callA = 0x16,
         ret   = 0x17,
 
+        nop   = 0x00,
         stp   = 0xFF
     };
 
-    std::unordered_map<std::string, ISA::Instruction> instructionMap =
+    inline std::unordered_map<std::string, ISA::Instruction> instructionMap =
     {
         {"movrv", ISA::Instruction::movRV},
         {"movrr", ISA::Instruction::movRR},
@@ -75,7 +76,7 @@ namespace ISA
         {"pushx", ISA::Instruction::pushX},
 
         {"popr",  ISA::Instruction::popR},
-        {"pop16", ISA::Instruction::pop16},
+        {"popx", ISA::Instruction::popX},
 
         {"calla", ISA::Instruction::callA},
         {"ret",   ISA::Instruction::ret},
@@ -92,10 +93,6 @@ namespace ISA
         return static_cast<uint8_t>(ins);
     }
     
-    constexpr Instruction strToInstruction(const std::string& ins)
-    {
-        
-    }
 
     constexpr uint16_t instructionLength(Instruction instruction)
     {
@@ -104,6 +101,7 @@ namespace ISA
             // 1 byte
             case Instruction::stp:
             case Instruction::ret:
+            case Instruction::nop:
                 return 1;
 
             // 2 bytes
@@ -111,7 +109,7 @@ namespace ISA
             case Instruction::pushV:
             case Instruction::pushX:
             case Instruction::popR:
-            case Instruction::pop16:
+            case Instruction::popX:
                 return 2;
 
             // 3 bytes
