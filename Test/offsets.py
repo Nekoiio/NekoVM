@@ -1,19 +1,3 @@
-program4: bytes = bytes([
-    0x00, 0x00, 0x01,
-    0x10, 0x00,
-    0x12, 0x12, 0x34,
-    0x15, 0x00, 0x00,
-    0xFF, 0x00, 0x21
-    0x00, 0x00, 0x01,
-    0x00, 0x00, 0x01,
-    0x00, 0x00, 0x01,
-    0x00, 0x00, 0x01,
-    0x00, 0x00, 0x01,
-    0x00, 0x00, 0x01,
-    0x00, 0x00, 0x01,
-    0x00, 0x00, 0x10,
-    0x16
-])
+text: str = "I can relate to what you said about overthinking your writing. I sometimes do something very similar to that when Im writing, like I know what I want to say but have trouble putting it into words. I also find that I can come up with a lot of ideas, but organizing them and keeping everything focused can be difficult. I think it's interesting that you keep a journal to write down your problems and how you're going to deal with them. I haven't really tried to get into journaling myself, but I can kinda see how that could help with organizing your thoughts. I also agree with what you said about revision. I tend to want my writing to be right the first time instead of treating the first version as something I can improve later."
 
-for i,v in enumerate(program4):
-    print(hex(i), hex(v))
+

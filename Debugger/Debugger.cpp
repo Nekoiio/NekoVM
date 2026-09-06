@@ -128,10 +128,12 @@ void Debugger::printRegs()
 
     // Next instruction
     current += ISA::instructionLength(op);
+    op = ISA::decode(mem.read(current));
     interpret(current);
 
     // Next instruction
     current += ISA::instructionLength(op);
+    op = ISA::decode(mem.read(current));
     interpret(current);
 
     // Next instruction
@@ -194,8 +196,9 @@ void Debugger::interpret(const uint16_t address)
         case ISA::Instruction::callA: printInstruct("call", "a", address); break;
         case ISA::Instruction::ret:   printInstruct("ret", "", address); break;
 
-        case ISA::Instruction::pop16: printInstruct("pop", "x", address); break;
+        case ISA::Instruction::popX: printInstruct("pop", "x", address); break;
         case ISA::Instruction::popR:  printInstruct("pop", "r", address); break;
+        case ISA::Instruction::nop:  printInstruct("nop", "", address); break;
 
         default: break;
     }
