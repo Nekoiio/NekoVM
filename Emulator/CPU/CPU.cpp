@@ -215,7 +215,7 @@ void CPU::step(Memory& mem)
         }
 
 
-        case ISA::Instruction::pop16:
+        case ISA::Instruction::popX:
         {
             if (SP + 2 == 0x0000) throw std::runtime_error("Stack underflow");
 
@@ -247,7 +247,11 @@ void CPU::step(Memory& mem)
 
             break;
         }
-
+        case ISA::Instruction::nop:
+        {
+            PC += 1;
+            break;
+        }
         case ISA::Instruction::ret:
         {
             if (SP == MemoryMap::STACK_START) throw std::runtime_error("Stack underflow");
